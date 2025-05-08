@@ -1,2 +1,2 @@
-# Portfolio
-Collection of projects etc hosted on portfolio page mostly and some other side projects.
+# Info
+Hello My name is Muhammad Ali Butt and i am a data science and Ai enthusiast and student currently doing bs Ai from Umt. I want share my work and my ai journey with as much people as i can as i believe knowledge should be free for eveyone whether a person is from a developing country such as me or anywhere else in the world. So this is a collection of projects etc hosted on portfolio page mostly and some other side projects which i have made and everyone can benefit from as i have made them in a way which is beginner friendly.
