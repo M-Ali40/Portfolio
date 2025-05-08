@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tense Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .cyberpunk-gradient {
+            background: linear-gradient(45deg, #ff003c, #ff00ff);
+        }
+        .question-container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #0ff;
+            transition: all 0.3s ease;
+        }
+        .option-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        .correct {
+            background: rgba(0, 255, 0, 0.3);
+            border: 1px solid #0f0;
+        }
+        .incorrect {
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #f00;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4" style="text-shadow: 0 0 10px #0ff">
+                Tense Master
+            </h1>
+        </header>
+
+        <!-- Add tense selection screen -->
+        <div id="tense-selection" class="max-w-2xl mx-auto text-center">
+            <h2 class="text-2xl mb-6">Select Tense Category:</h2>
+            <div class="space-y-4">
+                <button onclick="startGameWithTense('present')" class="cyberpunk-gradient text-white px-6 py-3 rounded-lg hover:scale-105 transition-transform w-64">Present Tense</button>
+                <button onclick="startGameWithTense('past')" class="cyberpunk-gradient text-white px-6 py-3 rounded-lg hover:scale-105 transition-transform w-64">Past Tense</button>
+                <button onclick="startGameWithTense('future')" class="cyberpunk-gradient text-white px-6 py-3 rounded-lg hover:scale-105 transition-transform w-64">Future Tense</button>
+            </div>
+        </div>
+
+        <!-- Game screen (initially hidden) -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-center space-x-4 mb-8">
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <span class="font-bold">Correct Answers:</span>
+                    <span id="score">0/0</span>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <span class="font-bold">Time:</span>
+                    <span id="timer">30</span>
+                </div>
+            </div>
+
+            <main class="max-w-2xl mx-auto">
+                <div class="question-container p-8 rounded-xl mb-8">
+                    <h2 id="question" class="text-2xl mb-6"></h2>
+                    <div id="options" class="space-y-4">
+                        <!-- Options will be dynamically generated here -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div id="final-screen" class="hidden question-container p-8 rounded-xl text-center max-w-2xl mx-auto">
+            <h2 class="text-3xl mb-4">Game Over!</h2>
+            <p class="text-xl mb-6"><span id="final-score">0 out of 10 questions</span></p>
+            <button onclick="showTenseSelection()" class="cyberpunk-gradient text-white px-6 py-3 rounded-lg hover:scale-105 transition-transform">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <footer class="text-center text-gray-400 py-4">
+        Credits: The Legendary Sir Farman, whose idea was turned into reality by hardwork, determination and sheer incredible will.
+    </footer>
+    
+
+    <script>
+        const verbData = {
+            "verbs": [
+                {
+                    "base_verb": "be",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I am",
+                            "progressive": "I am being",
+                            "perfect": "I have been",
+                            "perfect_progressive": "I have been being"
+                        },
+                        "past_simple": {
+                            "indefinite": "I was",
+                            "progressive": "I was being",
+                            "perfect": "I had been",
+                            "perfect_progressive": "I had been being"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will be",
+                            "progressive": "I will be being",
+                            "perfect": "I will have been",
+                            "perfect_progressive": "I will have been being"
+                        }
+                    }
+                },
+                {
+                    "base_verb": "have",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I have",
+                            "progressive": "I am having",
+                            "perfect": "I have had",
+                            "perfect_progressive": "I have been having"
+                        },
+                        "past_simple": {
+                            "indefinite": "I had",
+                            "progressive": "I was having",
+                            "perfect": "I had had",
+                            "perfect_progressive": "I had been having"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will have",
+                            "progressive": "I will be having",
+                            "perfect": "I will have had",
+                            "perfect_progressive": "I will have been having"
+                        }
+                    }
+                },
+                {
+                    "base_verb": "do",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I do",
+                            "progressive": "I am doing",
+                            "perfect": "I have done",
+                            "perfect_progressive": "I have been doing"
+                        },
+                        "past_simple": {
+                            "indefinite": "I did",
+                            "progressive": "I was doing",
+                            "perfect": "I had done",
+                            "perfect_progressive": "I had been doing"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will do",
+                            "progressive": "I will be doing",
+                            "perfect": "I will have done",
+                            "perfect_progressive": "I will have been doing"
+                        }
+                    }
+                },
+                {
+                    "base_verb": "go",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I go",
+                            "progressive": "I am going",
+                            "perfect": "I have gone",
+                            "perfect_progressive": "I have been going"
+                        },
+                        "past_simple": {
+                            "indefinite": "I went",
+                            "progressive": "I was going",
+                            "perfect": "I had gone",
+                            "perfect_progressive": "I had been going"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will go",
+                            "progressive": "I will be going",
+                            "perfect": "I will have gone",
+                            "perfect_progressive": "I will have been going"
+                        }
+                    }
+                },
+                {
+                    "base_verb": "see",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I see",
+                            "progressive": "I am seeing",
+                            "perfect": "I have seen",
+                            "perfect_progressive": "I have been seeing"
+                        },
+                        "past_simple": {
+                            "indefinite": "I saw",
+                            "progressive": "I was seeing",
+                            "perfect": "I had seen",
+                            "perfect_progressive": "I had been seeing"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will see",
+                            "progressive": "I will be seeing",
+                            "perfect": "I will have seen",
+                            "perfect_progressive": "I will have been seeing"
+                        }
+                    }
+                },
+                {
+                    "base_verb": "take",
+                    "examples": {
+                        "present_simple": {
+                            "indefinite": "I take",
+                            "progressive": "I am taking",
+                            "perfect": "I have taken",
+                            "perfect_progressive": "I have been taking"
+                        },
+                        "past_simple": {
+                            "indefinite": "I took",
+                            "progressive": "I was taking",
+                            "perfect": "I had taken",
+                            "perfect_progressive": "I had been taking"
+                        },
+                        "future_simple": {
+                            "indefinite": "I will take",
+                            "progressive": "I will be taking",
+                            "perfect": "I will have taken",
+                            "perfect_progressive": "I will have been taking"
+                        }
+                    }
+                }
+            ]
+        };
+
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let totalAnswered = 0;
+        let timeLeft = 30;
+        let timer;
+        let selectedTense = '';
+        let questions = [];
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function generateQuestionsForTense(tense) {
+            const tenseMap = {
+                'present': 'present_simple',
+                'past': 'past_simple',
+                'future': 'future_simple'
+            };
+            
+            const selectedTenseKey = tenseMap[tense];
+            const types = ['indefinite', 'progressive', 'perfect', 'perfect_progressive'];
+            
+            let allQuestions = [];
+
+            // Generate all possible questions
+            verbData.verbs.forEach(verb => {
+                const tenseData = verb.examples[selectedTenseKey];
+                if (!tenseData) return;
+
+                types.forEach(type => {
+                    const correctAnswer = tenseData[type];
+                    if (!correctAnswer) return;
+
+                    // Collect all wrong options
+                    let wrongOptions = new Set();
+                    verbData.verbs.forEach(otherVerb => {
+                        const otherTenseData = otherVerb.examples[selectedTenseKey];
+                        if (otherTenseData && otherTenseData[type] && otherTenseData[type] !== correctAnswer) {
+                            wrongOptions.add(otherTenseData[type]);
+                        }
+                    });
+
+                    // Convert Set to Array and shuffle
+                    wrongOptions = Array.from(wrongOptions);
+                    wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
+
+                    allQuestions.push({
+                        question: `What is the ${type.replace('_', ' ')} form of '${verb.base_verb}' in ${selectedTenseKey.replace('_', ' ')}?`,
+                        correctAnswer: correctAnswer,
+                        options: shuffleArray([correctAnswer, ...wrongOptions])
+                    });
+                });
+            });
+
+            // Shuffle and select 10 questions
+            allQuestions = shuffleArray(allQuestions);
+            
+            // If we have less than 10 questions, repeat some questions
+            while (allQuestions.length < 10) {
+                allQuestions.push(...shuffleArray(allQuestions));
+            }
+
+            const finalQuestions = allQuestions.slice(0, 10).map((q, index) => ({
+                ...q,
+                questionNumber: index + 1,
+                correct: q.options.indexOf(q.correctAnswer)
+            }));
+
+            console.log('Generated questions:', finalQuestions.length); // Debug log
+            return finalQuestions;
+        }
+
+        function startGameWithTense(tense) {
+            selectedTense = tense;
+            questions = generateQuestionsForTense(tense);
+            currentQuestion = 0;
+            correctAnswers = 0;
+            totalAnswered = 0;
+            timeLeft = 30;
+            
+            document.getElementById('tense-selection').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('final-screen').classList.add('hidden');
+            
+            loadQuestion();
+            startTimer();
+        }
+
+        function showTenseSelection() {
+            document.getElementById('final-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('tense-selection').classList.remove('hidden');
+            clearInterval(timer);
+        }
+
+        function loadQuestion() {
+            console.log('Current question:', currentQuestion, 'Total questions:', questions.length); // Debug log
+            
+            if (currentQuestion >= questions.length) {
+                showFinalScreen();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            document.getElementById('question').textContent = `Q${question.questionNumber}) ${question.question}`;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn w-full text-left p-4 rounded-lg mb-2';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('score').textContent = `${correctAnswers}/${totalAnswered}`;
+            resetTimer();
+        }
+
+        function selectAnswer(selectedIndex) {
+            clearInterval(timer); // Stop the timer
+            
+            const question = questions[currentQuestion];
+            const options = document.getElementById('options').children;
+            
+            // Disable all buttons
+            Array.from(options).forEach(button => button.disabled = true);
+            
+            totalAnswered++;
+            
+            if (selectedIndex === question.correct) {
+                correctAnswers++;
+                options[selectedIndex].classList.add('correct');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[question.correct].classList.add('correct');
+            }
+
+            document.getElementById('score').textContent = `${correctAnswers}/${totalAnswered}`;
+            
+            // Wait 1.5 seconds before next question
+            setTimeout(() => {
+                currentQuestion++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    currentQuestion++;
+                    loadQuestion();
+                }
+            }, 1000);
+        }
+
+        function showFinalScreen() {
+            clearInterval(timer);
+            document.getElementById('final-score').textContent = `${correctAnswers} out of ${questions.length} questions were correct`;
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('hidden');
+        }
+
+        // Show tense selection on initial load
+        showTenseSelection();
+    </script>
+</body>
+</html>
